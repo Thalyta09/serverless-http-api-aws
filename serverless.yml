@@ -1,0 +1,72 @@
+service: serverless-node-js-http-api
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: '20201221'
+  region: sa-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:sa-east-1:760321754040:table/users
+
+functions:
+  hello:
+    handler: src/hello.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+  insertUser:
+    handler: src/insertUser.handler
+    events:
+      - httpApi:
+          path: /users
+          method: post
+  listAllUsers:
+    handler: src/listAllUsers.handler
+    events:
+      - httpApi:
+          path: /users
+          method: get
+  listUser:
+    handler: src/listUser.handler
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: get
+  updateUser:
+    handler: src/updateUser.handler
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: put
+  deleteUser:
+    handler: src/deleteUser.handler
+    events:
+      - httpApi:
+          path: /users/{id}
+          method: delete
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: users
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
